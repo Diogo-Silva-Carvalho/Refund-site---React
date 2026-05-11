@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { useNavigate, useParams } from "react-router"
+import {z, ZodError} from "zod"
 
 import fileSvg from "../assets/file.svg"
 import { CATEGORIES, CATEGORIES_KEYS } from "../utils/categories"
@@ -9,10 +10,16 @@ import { Select } from "../components/Select"
 import { Upload } from "../components/Upload"
 import { Button } from "../components/Button"
 
+const refundSchema = z.object({
+    name: z.string().min(3, {message: "Infome um nome claro para sua solicitação"}),
+    category: z.string().min(1, {message: "Informe a categoria"}),
+    amount: z.coerce.number({message: "Informe um valor váido"}).positive({message: "Infome um valor válido e superior a 0"}),
+})
+
 export function Refund(){
-    const [name, setName] = useState("Teste")
-    const [amount, setAmount] = useState("34")
-    const [category, setCategory] = useState("transport")
+    const [name, setName] = useState("")
+    const [amount, setAmount] = useState("")
+    const [category, setCategory] = useState("")
     const [isLoading, setIsLoading] = useState(false)
     const [filename, setFilename] = useState<File | null>(null)
 
@@ -21,12 +28,33 @@ export function Refund(){
 
     function onSubmit(e:React.FormEvent){
         e.preventDefault()
+
         if(params.id){
             return navigate(-1)
         }
 
-        console.log(name, amount, category, filename)
-        navigate("/confirm", { state: { fromSubmit: true }})
+        try {
+            setIsLoading(true)
+
+            const data = refundSchema.parse({
+                name,
+                category,
+                amount: amount.replace(",",".")
+            })
+
+            console.log(data)
+            navigate("/confirm", { state: { fromSubmit: true }})
+        } catch (error) {
+            console.log(error)
+
+            if(error instanceof ZodError){
+                return alert(error.issues[0].message)
+            }
+
+            alert("Não foi possivel realizar a solicitação")
+        } finally {
+            setIsLoading(false)
+        }
     }
 
     return(
