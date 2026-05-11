@@ -22,7 +22,7 @@ export function Dashboard(){
 
     async function fetchRefunds(){
         try {
-            const response = await api.get<RefundsPaginationAPIResponse>(`/refund?name=${name.trim()}&page=${page}&perPage=${PER_PAGE}`)
+            const response = await api.get<RefundsPaginationAPIResponse>(`/refunds?name=${name.trim()}&page=${page}&perPage=${PER_PAGE}`)
             
             setRefunds(
                 response.data.refunds.map((refund)=>({
@@ -44,6 +44,11 @@ export function Dashboard(){
 
             alert("Não foi possivel carregar")
         }
+    }
+
+    function onSubmit(e: React.FormEvent){
+        e.preventDefault()
+        fetchRefunds()
     }
 
     function handlePagination(action: "next" | "previous"){
@@ -70,7 +75,7 @@ export function Dashboard(){
                 Solicitações
             </h1>
 
-            <form onSubmit={fetchRefunds} className="flex flex-1 items-center justify-between pb-6 border-b-[1px] border-b-gray-400 md:flex-row gap-2 mt-6">
+            <form onSubmit={onSubmit} className="flex flex-1 items-center justify-between pb-6 border-b-[1px] border-b-gray-400 md:flex-row gap-2 mt-6">
                 <Input placeholder="Pesquisar pelo nome" onChange={(e)=> setName(e.target.value)}/>
 
                 <Button type="submit" variant="icon">
